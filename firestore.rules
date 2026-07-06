@@ -1,0 +1,39 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // combis: อ่านได้ทุกคน (สาธารณะ), เพิ่มได้เฉพาะคนที่ล็อกอิน,
+    // แก้ไขได้เฉพาะฟิลด์ likeCount (สำหรับระบบไลค์), ลบได้เฉพาะเจ้าของโพสต์
+    match /combis/{comboId} {
+      allow read: if true;
+
+      allow create: if request.auth != null
+        && request.resource.data.authorUid == request.auth.uid
+        && request.resource.data.likeCount == 0
+        && request.resource.data.score is number;
+
+      allow update: if request.auth != null
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likeCount'])
+        && (
+          request.resource.data.likeCount == resource.data.likeCount + 1 ||
+          request.resource.data.likeCount == resource.data.likeCount - 1
+        );
+
+      allow delete: if request.auth != null
+        && resource.data.authorUid == request.auth.uid;
+    }
+
+    // likes: ป้องกันไลค์ซ้ำด้วย doc id = comboId_uid, แก้/ลบได้เฉพาะเจ้าของไลค์นั้น
+    match /likes/{likeId} {
+      allow read: if request.auth != null;
+
+      allow create: if request.auth != null
+        && request.resource.data.uid == request.auth.uid
+        && likeId == request.resource.data.comboId + '_' + request.auth.uid;
+
+      allow delete: if request.auth != null
+        && resource.data.uid == request.auth.uid;
+    }
+  }
+}
