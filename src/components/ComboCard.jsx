@@ -56,6 +56,7 @@ export default function ComboCard({ combo, liked, myVote }) {
                 {shorten(t.name, 6)}
               </div>
               {t.level && <span className="treasure-level">+{t.level}</span>}
+              {t.status && <span className="treasure-status-label">{t.status}</span>}
             </div>
           ))}
         </div>

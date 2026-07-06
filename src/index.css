@@ -456,6 +456,55 @@ body {
   min-height: 60px;
 }
 
+.treasure-block {
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.treasure-block:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.treasure-status-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.treasure-status-btn {
+  font-size: 11px;
+  background: var(--bg-card-muted);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  padding: 4px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+
+.treasure-status-btn.on {
+  background: var(--accent-cookie-bg);
+  color: var(--accent-cookie);
+  border-color: var(--accent-cookie);
+  font-weight: 600;
+}
+
+.treasure-status-label {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 9px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  background: var(--bg-card);
+  padding: 0 3px;
+}
+
 .treasure-input-row {
   display: grid;
   grid-template-columns: 1fr 70px;

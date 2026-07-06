@@ -7,10 +7,13 @@ import { POWER_EFFECTS } from "../gameData";
 const MAX_FILE_MB = 4;
 
 const emptyTreasures = [
-  { name: "", level: "" },
-  { name: "", level: "" },
-  { name: "", level: "" },
+  { name: "", level: "", status: "" },
+  { name: "", level: "", status: "" },
+  { name: "", level: "", status: "" },
 ];
+
+// สถานะสมบัติ เลือกได้ 1 อย่างต่อชิ้น
+const TREASURE_STATUS_OPTIONS = ["ไม่ต้องอีโว", "ไม่วิ้ง", "วิ้ง", "ไม่วิ้ง/วิ้ง"];
 
 // ถ้ามี prop editCombo แปลว่าเปิดมาเพื่อ "แก้ไข" เซ็ตที่มีอยู่แล้ว ไม่ใช่เพิ่มใหม่
 export default function AddComboModal({ episodeId, goalId, editCombo, onClose }) {
@@ -22,7 +25,9 @@ export default function AddComboModal({ episodeId, goalId, editCombo, onClose })
   const [pet, setPet] = useState(editCombo?.pet || "");
   const [treasures, setTreasures] = useState(
     editCombo?.treasures?.length
-      ? [0, 1, 2].map((i) => editCombo.treasures[i] || { name: "", level: "" })
+      ? [0, 1, 2].map(
+          (i) => editCombo.treasures[i] || { name: "", level: "", status: "" }
+        )
       : emptyTreasures
   );
   const [score, setScore] = useState(editCombo?.score ? String(editCombo.score) : "");
@@ -61,6 +66,15 @@ export default function AddComboModal({ episodeId, goalId, editCombo, onClose })
     setTreasures((prev) => {
       const next = [...prev];
       next[i] = { ...next[i], [field]: value };
+      return next;
+    });
+  }
+
+  function toggleTreasureStatus(i, statusValue) {
+    setTreasures((prev) => {
+      const next = [...prev];
+      const current = next[i].status;
+      next[i] = { ...next[i], status: current === statusValue ? "" : statusValue };
       return next;
     });
   }
@@ -173,24 +187,38 @@ export default function AddComboModal({ episodeId, goalId, editCombo, onClose })
             </div>
 
             <div className="form-field">
-              <label>เทรเชอร์ (สูงสุด 3 ชิ้น พร้อมระดับเสริม)</label>
+              <label>สมบัติ (สูงสุด 3 ชิ้น พร้อมระดับเสริม)</label>
               {treasures.map((t, i) => (
-                <div className="treasure-input-row" key={i}>
-                  <input
-                    type="text"
-                    value={t.name}
-                    onChange={(e) => updateTreasure(i, "name", e.target.value)}
-                    placeholder={`เทรเชอร์ที่ ${i + 1}`}
-                  />
-                  <input
-                    type="number"
-                    min="0"
-                    max="9"
-                    value={t.level}
-                    onChange={(e) => updateTreasure(i, "level", e.target.value)}
-                    placeholder="+9"
-                    className="level-input"
-                  />
+                <div className="treasure-block" key={i}>
+                  <div className="treasure-input-row">
+                    <input
+                      type="text"
+                      value={t.name}
+                      onChange={(e) => updateTreasure(i, "name", e.target.value)}
+                      placeholder={`สมบัติที่ ${i + 1}`}
+                    />
+                    <input
+                      type="number"
+                      min="0"
+                      max="9"
+                      value={t.level}
+                      onChange={(e) => updateTreasure(i, "level", e.target.value)}
+                      placeholder="+9"
+                      className="level-input"
+                    />
+                  </div>
+                  <div className="treasure-status-row">
+                    {TREASURE_STATUS_OPTIONS.map((opt) => (
+                      <button
+                        type="button"
+                        key={opt}
+                        className={`treasure-status-btn ${t.status === opt ? "on" : ""}`}
+                        onClick={() => toggleTreasureStatus(i, opt)}
+                      >
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>
@@ -284,11 +312,10 @@ export default function AddComboModal({ episodeId, goalId, editCombo, onClose })
                   placeholder="EXP"
                 />
                 <input
-                  type="number"
-                  min="0"
+                  type="text"
                   value={farmStats.boxes}
                   onChange={(e) => setFarmStats((s) => ({ ...s, boxes: e.target.value }))}
-                  placeholder="Boxes"
+                  placeholder="เช่น 1 กล่อง 100%"
                 />
                 <input
                   type="number"

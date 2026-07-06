@@ -1,6 +1,6 @@
 // รายชื่อเป้าหมายการเล่น (คงที่ ไม่ต้องแก้บ่อย)
 export const GOALS = [
-  { id: "score", label: "ตีคะแนน" },
+  { id: "score", label: "เก็บคะแนน" },
   { id: "autofarm", label: "ฟาร์มออโต้" },
   { id: "semiauto", label: "กึ่งออโต้" },
   { id: "coins", label: "ฟาร์มเหรียญ" },
