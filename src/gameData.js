@@ -28,3 +28,13 @@ export function goalLabel(id) {
 export function episodeLabel(id) {
   return EPISODES.find((e) => e.id === id)?.label || id;
 }
+
+// รายชื่อ Power+ Effect มาตรฐาน (คงที่ ไม่ต้องแก้บ่อย)
+export const POWER_EFFECTS = [
+  "Cheerleader",
+  "Special Force",
+  "Fairy",
+  "Cheesecake",
+  "Sea Fairy",
+  "Serenade",
+];

@@ -474,3 +474,256 @@ body {
   background: var(--text-muted);
   cursor: not-allowed;
 }
+
+.farm-stats-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  background: var(--bg-card-muted);
+  border-radius: var(--radius-control);
+  padding: 8px 12px;
+  margin-top: 12px;
+}
+
+.farm-stat-item {
+  display: flex;
+  flex-direction: column;
+  min-width: 60px;
+}
+
+.farm-stat-label {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.farm-stat-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.combi-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.vote-count {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.vote-count.verify {
+  color: var(--accent-green-dark);
+}
+
+.vote-count.reject {
+  color: #A32D2D;
+}
+
+.delete-btn {
+  background: transparent;
+  border: 1px solid #F0999A;
+  color: #A32D2D;
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+
+.delete-btn:hover {
+  background: #FCEBEB;
+}
+
+.detail-section {
+  margin-bottom: 18px;
+}
+
+.detail-heading {
+  font-weight: 600;
+  font-size: 14px;
+  margin: 0 0 8px;
+  color: var(--text-primary);
+}
+
+.detail-note {
+  font-size: 14px;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+  margin: 0;
+}
+
+.detail-link {
+  font-size: 13px;
+  color: var(--accent-green-dark);
+  word-break: break-all;
+}
+
+.boost-chips,
+.boost-toggle-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.boost-chip {
+  font-size: 12px;
+  background: var(--bg-card-muted);
+  color: var(--text-secondary);
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.boost-chip.on {
+  background: var(--accent-cookie-bg);
+  color: var(--accent-cookie);
+  font-weight: 600;
+}
+
+.boost-toggle-btn {
+  font-size: 12px;
+  background: var(--bg-card-muted);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  padding: 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+
+.boost-toggle-btn.on {
+  background: var(--accent-cookie-bg);
+  color: var(--accent-cookie);
+  border-color: var(--accent-cookie);
+  font-weight: 600;
+}
+
+.power-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+}
+
+.power-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg-card-muted);
+  border-radius: var(--radius-control);
+  padding: 8px 10px;
+  font-size: 12px;
+}
+
+.power-item.used {
+  background: #EAF3DE;
+}
+
+.power-status {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.power-item.used .power-status {
+  color: #3B6D11;
+  font-weight: 600;
+}
+
+.power-select-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.power-select-btn {
+  font-size: 12px;
+  background: var(--bg-card-muted);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  padding: 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+
+.power-select-btn.on {
+  background: #EAF3DE;
+  color: #3B6D11;
+  border-color: #97C459;
+  font-weight: 600;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 10px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card-muted);
+  border-radius: var(--radius-control);
+  padding: 8px 10px;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.stat-value {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.farm-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 8px;
+}
+
+.vote-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.vote-btn {
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: var(--font-body);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.vote-btn.verify.active {
+  background: #EAF3DE;
+  color: #3B6D11;
+  border-color: #97C459;
+}
+
+.vote-btn.reject.active {
+  background: #FCEBEB;
+  color: #A32D2D;
+  border-color: #F09595;
+}
+
+.voter-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.voter-chip {
+  font-size: 11px;
+  background: var(--bg-card-muted);
+  color: var(--text-secondary);
+  padding: 3px 8px;
+  border-radius: 999px;
+}

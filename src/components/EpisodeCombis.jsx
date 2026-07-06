@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { GOALS, EPISODES } from "../gameData";
-import { subscribeCombis, subscribeUserLikes } from "../lib/combis";
+import { subscribeCombis, subscribeUserLikes, subscribeUserVotes } from "../lib/combis";
 import { useAuth } from "../context/AuthContext";
 import TabRow from "./TabRow";
 import ComboCard from "./ComboCard";
@@ -12,6 +12,7 @@ export default function EpisodeCombis() {
   const [episodeId, setEpisodeId] = useState(EPISODES[0].id);
   const [combis, setCombis] = useState(null);
   const [likedIds, setLikedIds] = useState(new Set());
+  const [myVotes, setMyVotes] = useState(new Map());
   const [showAddModal, setShowAddModal] = useState(false);
 
   useEffect(() => {
@@ -22,6 +23,11 @@ export default function EpisodeCombis() {
 
   useEffect(() => {
     const unsub = subscribeUserLikes(user?.uid, setLikedIds);
+    return unsub;
+  }, [user?.uid]);
+
+  useEffect(() => {
+    const unsub = subscribeUserVotes(user?.uid, setMyVotes);
     return unsub;
   }, [user?.uid]);
 
@@ -57,7 +63,12 @@ export default function EpisodeCombis() {
       )}
 
       {combis?.map((c) => (
-        <ComboCard key={c.id} combo={c} liked={likedIds.has(c.id)} />
+        <ComboCard
+          key={c.id}
+          combo={c}
+          liked={likedIds.has(c.id)}
+          myVote={myVotes.get(c.id)}
+        />
       ))}
 
       {showAddModal && (

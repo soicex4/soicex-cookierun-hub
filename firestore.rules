@@ -4,21 +4,23 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // combis: อ่านได้ทุกคน (สาธารณะ), เพิ่มได้เฉพาะคนที่ล็อกอิน,
-    // แก้ไขได้เฉพาะฟิลด์ likeCount (สำหรับระบบไลค์), ลบได้เฉพาะเจ้าของโพสต์
+    // แก้ไขได้เฉพาะฟิลด์ likeCount/verifyCount/rejectCount (สำหรับไลค์+โหวต), ลบได้เฉพาะเจ้าของโพสต์
     match /combis/{comboId} {
       allow read: if true;
 
       allow create: if request.auth != null
         && request.resource.data.authorUid == request.auth.uid
         && request.resource.data.likeCount == 0
+        && request.resource.data.verifyCount == 0
+        && request.resource.data.rejectCount == 0
         && request.resource.data.score is number;
 
       allow update: if request.auth != null
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likeCount'])
-        && (
-          request.resource.data.likeCount == resource.data.likeCount + 1 ||
-          request.resource.data.likeCount == resource.data.likeCount - 1
-        );
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['likeCount', 'verifyCount', 'rejectCount'])
+        && isValidCounterChange('likeCount')
+        && isValidCounterChange('verifyCount')
+        && isValidCounterChange('rejectCount');
 
       allow delete: if request.auth != null
         && resource.data.authorUid == request.auth.uid;
@@ -35,5 +37,26 @@ service cloud.firestore {
       allow delete: if request.auth != null
         && resource.data.uid == request.auth.uid;
     }
+
+    // votes: โหวต verify/reject คนละ 1 ครั้งต่อเซ็ต ป้องกันด้วย doc id = comboId_uid เหมือน likes
+    match /votes/{voteId} {
+      allow read: if true;
+
+      allow create, update: if request.auth != null
+        && request.resource.data.uid == request.auth.uid
+        && voteId == request.resource.data.comboId + '_' + request.auth.uid
+        && request.resource.data.type in ['verify', 'reject'];
+
+      allow delete: if request.auth != null
+        && resource.data.uid == request.auth.uid;
+    }
+
+    // อนุญาตให้ counter เปลี่ยนได้แค่ +1/-1/ไม่เปลี่ยน ต่อการอัปเดตหนึ่งครั้ง (กันแก้เลขมั่ว)
+    function isValidCounterChange(field) {
+      return !(field in request.resource.data.diff(resource.data).affectedKeys())
+        || request.resource.data[field] == resource.data[field] + 1
+        || request.resource.data[field] == resource.data[field] - 1;
+    }
   }
 }
+

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { addCombi } from "../lib/combis";
 import { uploadImage } from "../lib/cloudinary";
+import { POWER_EFFECTS } from "../gameData";
 
 const MAX_FILE_MB = 4;
 
@@ -17,9 +18,30 @@ export default function AddComboModal({ episodeId, goalId, onClose }) {
   ]);
   const [score, setScore] = useState("");
   const [note, setNote] = useState("");
+  const [sourceUrl, setSourceUrl] = useState("");
+  const [boosts, setBoosts] = useState({
+    energy: "off",
+    itemTime: "off",
+    fastStart: "off",
+    randomBoost: "",
+  });
+  const [farmStats, setFarmStats] = useState({
+    coins: "",
+    exp: "",
+    boxes: "",
+    coinEfficiency: "",
+    timeSec: "",
+  });
   const [file, setFile] = useState(null);
+  const [powerEffectsUsed, setPowerEffectsUsed] = useState([]);
   const [status, setStatus] = useState(null); // null | "saving" | "error"
   const [errorMsg, setErrorMsg] = useState("");
+
+  function togglePowerEffect(name) {
+    setPowerEffectsUsed((prev) =>
+      prev.includes(name) ? prev.filter((n) => n !== name) : [...prev, name]
+    );
+  }
 
   function updateTreasure(i, field, value) {
     setTreasures((prev) => {
@@ -69,6 +91,10 @@ export default function AddComboModal({ episodeId, goalId, onClose }) {
         score,
         note: note.trim(),
         imageUrl,
+        boosts,
+        farmStats,
+        sourceUrl: sourceUrl.trim(),
+        powerEffectsUsed,
         author: user,
       });
 
@@ -160,6 +186,110 @@ export default function AddComboModal({ episodeId, goalId, onClose }) {
                 onChange={(e) => setNote(e.target.value)}
                 placeholder="เช่น ต้องปิดบูสต์ทั้งหมด"
                 maxLength={200}
+              />
+            </div>
+
+            <div className="form-field">
+              <label>บูสต์ที่ใช้</label>
+              <div className="boost-toggle-row">
+                {[
+                  ["energy", "Energy"],
+                  ["itemTime", "Item Time"],
+                  ["fastStart", "Fast Start"],
+                ].map(([key, label]) => (
+                  <button
+                    type="button"
+                    key={key}
+                    className={`boost-toggle-btn ${boosts[key] === "on" ? "on" : ""}`}
+                    onClick={() =>
+                      setBoosts((b) => ({
+                        ...b,
+                        [key]: b[key] === "on" ? "off" : "on",
+                      }))
+                    }
+                  >
+                    {label} {boosts[key] === "on" ? "ON" : "OFF"}
+                  </button>
+                ))}
+              </div>
+              <input
+                type="text"
+                value={boosts.randomBoost}
+                onChange={(e) => setBoosts((b) => ({ ...b, randomBoost: e.target.value }))}
+                placeholder="Random Boost (ไม่บังคับ)"
+                style={{ marginTop: 8 }}
+              />
+            </div>
+
+            <div className="form-field">
+              <label>Power+ Effects ที่ใช้</label>
+              <div className="power-select-grid">
+                {POWER_EFFECTS.map((name) => (
+                  <button
+                    type="button"
+                    key={name}
+                    className={`power-select-btn ${
+                      powerEffectsUsed.includes(name) ? "on" : ""
+                    }`}
+                    onClick={() => togglePowerEffect(name)}
+                  >
+                    {name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="form-field">
+              <label>Auto Farm Details (ไม่บังคับ)</label>
+              <div className="farm-stats-grid">
+                <input
+                  type="number"
+                  min="0"
+                  value={farmStats.coins}
+                  onChange={(e) => setFarmStats((s) => ({ ...s, coins: e.target.value }))}
+                  placeholder="Coins"
+                />
+                <input
+                  type="number"
+                  min="0"
+                  value={farmStats.exp}
+                  onChange={(e) => setFarmStats((s) => ({ ...s, exp: e.target.value }))}
+                  placeholder="EXP"
+                />
+                <input
+                  type="number"
+                  min="0"
+                  value={farmStats.boxes}
+                  onChange={(e) => setFarmStats((s) => ({ ...s, boxes: e.target.value }))}
+                  placeholder="Boxes"
+                />
+                <input
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  value={farmStats.coinEfficiency}
+                  onChange={(e) =>
+                    setFarmStats((s) => ({ ...s, coinEfficiency: e.target.value }))
+                  }
+                  placeholder="Coin Eff."
+                />
+                <input
+                  type="number"
+                  min="0"
+                  value={farmStats.timeSec}
+                  onChange={(e) => setFarmStats((s) => ({ ...s, timeSec: e.target.value }))}
+                  placeholder="Time (วินาที)"
+                />
+              </div>
+            </div>
+
+            <div className="form-field">
+              <label>ลิงก์อ้างอิง (ไม่บังคับ)</label>
+              <input
+                type="text"
+                value={sourceUrl}
+                onChange={(e) => setSourceUrl(e.target.value)}
+                placeholder="https://..."
               />
             </div>
 

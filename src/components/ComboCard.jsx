@@ -1,8 +1,12 @@
+import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { toggleLike } from "../lib/combis";
+import { toggleLike, deleteCombi } from "../lib/combis";
+import ComboDetailModal from "./ComboDetailModal";
 
-export default function ComboCard({ combo, liked }) {
+export default function ComboCard({ combo, liked, myVote }) {
   const { user, signIn } = useAuth();
+  const [showDetail, setShowDetail] = useState(false);
+  const isOwner = user && user.uid === combo.authorUid;
 
   async function handleLike() {
     if (!user) {
@@ -10,6 +14,12 @@ export default function ComboCard({ combo, liked }) {
       return;
     }
     await toggleLike(combo.id, user.uid);
+  }
+
+  async function handleDelete() {
+    const ok = window.confirm("ลบเซ็ตนี้ถาวรเลยไหม? กู้คืนไม่ได้");
+    if (!ok) return;
+    await deleteCombi(combo.id);
   }
 
   return (
@@ -48,6 +58,8 @@ export default function ComboCard({ combo, liked }) {
         </div>
       </div>
 
+      {combo.farmStats && <FarmStatsRow stats={combo.farmStats} />}
+
       {combo.note && <p className="combi-note">{combo.note}</p>}
 
       {combo.imageUrl && (
@@ -56,13 +68,57 @@ export default function ComboCard({ combo, liked }) {
 
       <div className="combi-bottom">
         <span className="combi-author">โดย {combo.authorName}</span>
-        <button
-          className={`like-btn ${liked ? "liked" : ""}`}
-          onClick={handleLike}
-        >
-          {liked ? "♥" : "♡"} {combo.likeCount || 0}
-        </button>
+
+        <div className="combi-actions">
+          <span className="vote-count verify" title="ยืนยันใช้ได้">
+            ✓ {combo.verifyCount || 0}
+          </span>
+          <span className="vote-count reject" title="ใช้ไม่ได้">
+            ✕ {combo.rejectCount || 0}
+          </span>
+
+          <button className="like-btn" onClick={() => setShowDetail(true)}>
+            ดูรายละเอียด
+          </button>
+
+          <button className={`like-btn ${liked ? "liked" : ""}`} onClick={handleLike}>
+            {liked ? "♥" : "♡"} {combo.likeCount || 0}
+          </button>
+
+          {isOwner && (
+            <button className="delete-btn" onClick={handleDelete}>
+              ลบ
+            </button>
+          )}
+        </div>
       </div>
+
+      {showDetail && (
+        <ComboDetailModal combo={combo} myVote={myVote} onClose={() => setShowDetail(false)} />
+      )}
+    </div>
+  );
+}
+
+function FarmStatsRow({ stats }) {
+  const items = [
+    ["Coins", stats.coins],
+    ["EXP", stats.exp],
+    ["Boxes", stats.boxes],
+    ["Coin Eff.", stats.coinEfficiency],
+    ["Time", stats.timeSec ? `${stats.timeSec}s` : null],
+  ].filter(([, v]) => v);
+
+  if (items.length === 0) return null;
+
+  return (
+    <div className="farm-stats-row">
+      {items.map(([label, value]) => (
+        <div className="farm-stat-item" key={label}>
+          <span className="farm-stat-label">{label}</span>
+          <span className="farm-stat-value">{value}</span>
+        </div>
+      ))}
     </div>
   );
 }
