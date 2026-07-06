@@ -1,39 +1,53 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { addCombi } from "../lib/combis";
+import { addCombi, updateCombi } from "../lib/combis";
 import { uploadImage } from "../lib/cloudinary";
 import { POWER_EFFECTS } from "../gameData";
 
 const MAX_FILE_MB = 4;
 
-export default function AddComboModal({ episodeId, goalId, onClose }) {
-  const { user, signIn } = useAuth();
+const emptyTreasures = [
+  { name: "", level: "" },
+  { name: "", level: "" },
+  { name: "", level: "" },
+];
 
-  const [mainCookie, setMainCookie] = useState("");
-  const [partner, setPartner] = useState("");
-  const [treasures, setTreasures] = useState([
-    { name: "", level: "" },
-    { name: "", level: "" },
-    { name: "", level: "" },
-  ]);
-  const [score, setScore] = useState("");
-  const [note, setNote] = useState("");
-  const [sourceUrl, setSourceUrl] = useState("");
-  const [boosts, setBoosts] = useState({
-    energy: "off",
-    itemTime: "off",
-    fastStart: "off",
-    randomBoost: "",
-  });
-  const [farmStats, setFarmStats] = useState({
-    coins: "",
-    exp: "",
-    boxes: "",
-    coinEfficiency: "",
-    timeSec: "",
-  });
+// ถ้ามี prop editCombo แปลว่าเปิดมาเพื่อ "แก้ไข" เซ็ตที่มีอยู่แล้ว ไม่ใช่เพิ่มใหม่
+export default function AddComboModal({ episodeId, goalId, editCombo, onClose }) {
+  const { user, signIn } = useAuth();
+  const isEditMode = Boolean(editCombo);
+
+  const [mainCookie, setMainCookie] = useState(editCombo?.mainCookie || "");
+  const [relayCookie, setRelayCookie] = useState(editCombo?.relayCookie || "");
+  const [pet, setPet] = useState(editCombo?.pet || "");
+  const [treasures, setTreasures] = useState(
+    editCombo?.treasures?.length
+      ? [0, 1, 2].map((i) => editCombo.treasures[i] || { name: "", level: "" })
+      : emptyTreasures
+  );
+  const [score, setScore] = useState(editCombo?.score ? String(editCombo.score) : "");
+  const [note, setNote] = useState(editCombo?.note || "");
+  const [sourceUrl, setSourceUrl] = useState(editCombo?.sourceUrl || "");
+  const [boosts, setBoosts] = useState(
+    editCombo?.boosts || {
+      energy: "off",
+      itemTime: "off",
+      fastStart: "off",
+      randomBoost: "",
+    }
+  );
+  const [farmStats, setFarmStats] = useState(
+    editCombo?.farmStats || {
+      coins: "",
+      exp: "",
+      boxes: "",
+      coinEfficiency: "",
+      timeSec: "",
+    }
+  );
   const [file, setFile] = useState(null);
-  const [powerEffectsUsed, setPowerEffectsUsed] = useState([]);
+  const [existingImageUrl, setExistingImageUrl] = useState(editCombo?.imageUrl || "");
+  const [powerEffectsUsed, setPowerEffectsUsed] = useState(editCombo?.powerEffectsUsed || []);
   const [status, setStatus] = useState(null); // null | "saving" | "error"
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -77,16 +91,15 @@ export default function AddComboModal({ episodeId, goalId, onClose }) {
     setErrorMsg("");
 
     try {
-      let imageUrl = "";
+      let imageUrl = existingImageUrl;
       if (file) {
         imageUrl = await uploadImage(file);
       }
 
-      await addCombi({
-        episodeId,
-        goalId,
+      const payload = {
         mainCookie: mainCookie.trim(),
-        partner: partner.trim(),
+        relayCookie: relayCookie.trim(),
+        pet: pet.trim(),
         treasures: treasures.filter((t) => t.name.trim()),
         score,
         note: note.trim(),
@@ -95,8 +108,13 @@ export default function AddComboModal({ episodeId, goalId, onClose }) {
         farmStats,
         sourceUrl: sourceUrl.trim(),
         powerEffectsUsed,
-        author: user,
-      });
+      };
+
+      if (isEditMode) {
+        await updateCombi(editCombo.id, payload);
+      } else {
+        await addCombi({ episodeId, goalId, ...payload, author: user });
+      }
 
       onClose();
     } catch (err) {
@@ -109,7 +127,7 @@ export default function AddComboModal({ episodeId, goalId, onClose }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-card" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <p className="modal-title">เพิ่มเซ็ตใหม่</p>
+          <p className="modal-title">{isEditMode ? "แก้ไขเซ็ต" : "เพิ่มเซ็ตใหม่"}</p>
           <button className="modal-close" onClick={onClose}>
             ✕
           </button>
@@ -117,14 +135,14 @@ export default function AddComboModal({ episodeId, goalId, onClose }) {
 
         {!user ? (
           <div className="login-prompt">
-            <p>ต้องเข้าสู่ระบบก่อนถึงจะเพิ่มเซ็ตได้</p>
+            <p>ต้องเข้าสู่ระบบก่อนถึงจะเพิ่ม/แก้ไขเซ็ตได้</p>
             <button className="login-btn" onClick={signIn}>
               เข้าสู่ระบบด้วย Google
             </button>
           </div>
         ) : (
           <form onSubmit={handleSubmit}>
-            <div className="form-row">
+            <div className="form-row-3">
               <div className="form-field">
                 <label>คุกกี้หลัก</label>
                 <input
@@ -135,12 +153,21 @@ export default function AddComboModal({ episodeId, goalId, onClose }) {
                 />
               </div>
               <div className="form-field">
-                <label>คุกกี้/เพ็ทคู่ (ไม่บังคับ)</label>
+                <label>คุกกี้ผลัด (ไม่บังคับ)</label>
                 <input
                   type="text"
-                  value={partner}
-                  onChange={(e) => setPartner(e.target.value)}
+                  value={relayCookie}
+                  onChange={(e) => setRelayCookie(e.target.value)}
                   placeholder="เช่น Fire Spirit"
+                />
+              </div>
+              <div className="form-field">
+                <label>เพ็ท (ไม่บังคับ)</label>
+                <input
+                  type="text"
+                  value={pet}
+                  onChange={(e) => setPet(e.target.value)}
+                  placeholder="เช่น Baby Mango"
                 />
               </div>
             </div>
@@ -297,9 +324,13 @@ export default function AddComboModal({ episodeId, goalId, onClose }) {
               <label>สกรีนช็อต (ไม่บังคับ)</label>
               <label
                 htmlFor="combo-screenshot"
-                className={`dropzone ${file ? "has-file" : ""}`}
+                className={`dropzone ${file || existingImageUrl ? "has-file" : ""}`}
               >
-                {file ? `เลือกไฟล์แล้ว: ${file.name}` : "แตะเพื่อเลือกรูป (จำกัด 4MB)"}
+                {file
+                  ? `เลือกไฟล์แล้ว: ${file.name}`
+                  : existingImageUrl
+                  ? "มีรูปเดิมอยู่แล้ว (แตะเพื่อเปลี่ยน)"
+                  : "แตะเพื่อเลือกรูป (จำกัด 4MB)"}
               </label>
               <input
                 id="combo-screenshot"
@@ -311,7 +342,11 @@ export default function AddComboModal({ episodeId, goalId, onClose }) {
             </div>
 
             <button className="submit-btn" type="submit" disabled={status === "saving"}>
-              {status === "saving" ? "กำลังบันทึก..." : "เพิ่มเซ็ตนี้"}
+              {status === "saving"
+                ? "กำลังบันทึก..."
+                : isEditMode
+                ? "บันทึกการแก้ไข"
+                : "เพิ่มเซ็ตนี้"}
             </button>
 
             {errorMsg && <p className="status-message error">{errorMsg}</p>}

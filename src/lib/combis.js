@@ -5,6 +5,7 @@ import {
   orderBy,
   onSnapshot,
   addDoc,
+  updateDoc,
   serverTimestamp,
   doc,
   runTransaction,
@@ -39,7 +40,8 @@ export async function addCombi({
   episodeId,
   goalId,
   mainCookie,
-  partner,
+  relayCookie,
+  pet,
   treasures,
   score,
   note,
@@ -54,7 +56,8 @@ export async function addCombi({
     episodeId,
     goalId,
     mainCookie,
-    partner,
+    relayCookie,
+    pet,
     treasures, // [{ name, level }]
     score: Number(score) || 0,
     note: note || "",
@@ -70,6 +73,36 @@ export async function addCombi({
     authorName: author.displayName || "ผู้เล่น",
     authorPhoto: author.photoURL || "",
     createdAt: serverTimestamp(),
+  });
+}
+
+// แก้ไข combi ที่มีอยู่แล้ว (ทำได้เฉพาะเจ้าของโพสต์ - กันไว้อีกชั้นด้วย Firestore rules)
+// ไม่แตะ likeCount/verifyCount/rejectCount/authorUid/createdAt เพื่อให้ผ่านกฎความปลอดภัย
+export async function updateCombi(comboId, {
+  mainCookie,
+  relayCookie,
+  pet,
+  treasures,
+  score,
+  note,
+  imageUrl,
+  boosts,
+  farmStats,
+  sourceUrl,
+  powerEffectsUsed,
+}) {
+  await updateDoc(doc(db, COMBIS, comboId), {
+    mainCookie,
+    relayCookie,
+    pet,
+    treasures,
+    score: Number(score) || 0,
+    note: note || "",
+    imageUrl: imageUrl || "",
+    boosts: boosts || null,
+    farmStats: farmStats || null,
+    sourceUrl: sourceUrl || "",
+    powerEffectsUsed: powerEffectsUsed || [],
   });
 }
 

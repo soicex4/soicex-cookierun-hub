@@ -2,10 +2,12 @@ import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { toggleLike, deleteCombi } from "../lib/combis";
 import ComboDetailModal from "./ComboDetailModal";
+import AddComboModal from "./AddComboModal";
 
 export default function ComboCard({ combo, liked, myVote }) {
   const { user, signIn } = useAuth();
   const [showDetail, setShowDetail] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
   const isOwner = user && user.uid === combo.authorUid;
 
   async function handleLike() {
@@ -30,15 +32,21 @@ export default function ComboCard({ combo, liked, myVote }) {
             <div className="chip cookie" title={combo.mainCookie}>
               {shorten(combo.mainCookie)}
             </div>
-            {combo.partner && (
+            {combo.relayCookie && (
               <>
                 <span className="plus">+</span>
-                <div className="chip cookie" title={combo.partner}>
-                  {shorten(combo.partner)}
+                <div className="chip cookie" title={combo.relayCookie}>
+                  {shorten(combo.relayCookie)}
                 </div>
               </>
             )}
           </div>
+
+          {combo.pet && (
+            <div className="chip pet" title={combo.pet}>
+              {shorten(combo.pet)}
+            </div>
+          )}
 
           {combo.treasures?.length > 0 && <span className="divider" />}
 
@@ -86,15 +94,29 @@ export default function ComboCard({ combo, liked, myVote }) {
           </button>
 
           {isOwner && (
-            <button className="delete-btn" onClick={handleDelete}>
-              ลบ
-            </button>
+            <>
+              <button className="edit-btn" onClick={() => setShowEdit(true)}>
+                แก้ไข
+              </button>
+              <button className="delete-btn" onClick={handleDelete}>
+                ลบ
+              </button>
+            </>
           )}
         </div>
       </div>
 
       {showDetail && (
         <ComboDetailModal combo={combo} myVote={myVote} onClose={() => setShowDetail(false)} />
+      )}
+
+      {showEdit && (
+        <AddComboModal
+          episodeId={combo.episodeId}
+          goalId={combo.goalId}
+          editCombo={combo}
+          onClose={() => setShowEdit(false)}
+        />
       )}
     </div>
   );

@@ -15,12 +15,26 @@ service cloud.firestore {
         && request.resource.data.rejectCount == 0
         && request.resource.data.score is number;
 
-      allow update: if request.auth != null
-        && request.resource.data.diff(resource.data).affectedKeys()
-             .hasOnly(['likeCount', 'verifyCount', 'rejectCount'])
-        && isValidCounterChange('likeCount')
-        && isValidCounterChange('verifyCount')
-        && isValidCounterChange('rejectCount');
+      allow update: if request.auth != null && (
+        // เจ้าของโพสต์แก้ไขเนื้อหาได้ทุกฟิลด์ ยกเว้นตัวนับกับข้อมูลระบบที่ต้องคงเดิม
+        (
+          resource.data.authorUid == request.auth.uid
+          && request.resource.data.authorUid == resource.data.authorUid
+          && request.resource.data.likeCount == resource.data.likeCount
+          && request.resource.data.verifyCount == resource.data.verifyCount
+          && request.resource.data.rejectCount == resource.data.rejectCount
+          && request.resource.data.createdAt == resource.data.createdAt
+        )
+        ||
+        // คนอื่น: แก้ได้แค่ตัวนับ likeCount/verifyCount/rejectCount ทีละ 1 (ไลค์/โหวต)
+        (
+          request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['likeCount', 'verifyCount', 'rejectCount'])
+          && isValidCounterChange('likeCount')
+          && isValidCounterChange('verifyCount')
+          && isValidCounterChange('rejectCount')
+        )
+      );
 
       allow delete: if request.auth != null
         && resource.data.authorUid == request.auth.uid;
